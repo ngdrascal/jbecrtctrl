@@ -8,7 +8,7 @@ Circa 1981
 * Intel [8255](https://en.wikipedia.org/wiki/Intel_8255) - Programmable Peripheral Interface
 * Intel [8085](https://en.wikipedia.org/wiki/Intel_8085) - 8 bit microprocessor
 ## Schematic ##
-See pages 3 and 4 of the [manual](./docs/JohnBellEngineeringCrtControllerListing.pdf).
+See pages 3 and 4 of the [manual](./docs/JohnBellEngineeringCrtControllerManual.pdf).
 ## Front ##
 ![Front](./images/board_front.png)
 ## Back ##
