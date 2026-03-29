@@ -29,11 +29,11 @@ NUMLIN EQU  25                  ;25 CHARACTER LINES PER FRAME.
 ;   TO THE 8275 CS ADDRESS.
 
 $EJECT
-;PAGE  2 =======================================================================
+;=== PAGE  2 ===================================================================
         ASEG
-        ORG     6000H           ;START OF RAH.
+        ORG     6000H           ;START OF RAM.
 RAM:
-TOPDIS: DS      LINSIZ*NUMLIN-1 '
+TOPDIS: DS      LINSIZ*NUMLIN-1
 BOTDIS: DS      1
 LAST:
 
@@ -79,7 +79,7 @@ VRTC    EQU     OSH             ;CONNECTED TO 8255A PORT C BIT 3.
 LCL     EQU     SOH             ;CONNECTED TO 8255A PORT C BIT 7.
 EOR     EQU     OFOH            ;END-OF-RDW CMD FOR 8275.
 $EJECT
-;PAGE  3 =======================================================================
+;=== PAGE  3 ===================================================================
         ASEG
         ORG 0
 ;INITIALIZE VARIABLES.
@@ -109,13 +109,13 @@ LOOPF:  MOV     M,E
         CMP     B
         JNZ     LOOPF
         JMP     INIT55
-;PAGE  4 =======================================================================
+;=== PAGE  4 ===================================================================
 ;RST 6.5 LINE INTERRUPT ROUTINE.
 ;THIS ROUTINE IS EXECUTED ONCE EVERY CHARACTER LINE.
 ;THE PROCESSOR THEN SENDS THE NEXT LINE TO THE 8275 ROH DUFFER,
 ;THEN CHECKS TO SEE IF IT IS THE LAST LINE IN THE FRAME.
         ORG     34H
-POPDAT: PUSH    PSH             ;SAVE A AND FLAGS
+POPDAT: PUSH    PSW             ;SAVE A AND FLAGS
         PUSH    D               ;SAVE D AND E
         PUSH    H               ;SAVE H AND L
         LXI     H,0000H         ;ZERO H AND L
@@ -165,7 +165,7 @@ POPDAT: PUSH    PSH             ;SAVE A AND FLAGS
         POP     H
         POP     H
         POP     H
-;PAGE  5 =======================================================================
+;=== PAGE  5 ===================================================================
         POP     H
         POP     H
         POP     H
@@ -214,12 +214,12 @@ EFRAME: POP     B
 
 LINE:   POP     H
         POP     D
-        POP PSW
+        POP     PSW
         EI
         RET
 ;REST OF POWER-ON INITIALIZATION CONTINUES HERE.
 INIT55: MVI     A, SUH          ;MOVE 8255 CONTROL WORD INTO A
-;PAGE  6 =======================================================================
+;=== PAGE  6 ===================================================================
         STA     CMD55           ;PUT CONTROL WORD INTO 8255
         ;
         ; 8251 INITIALIZATION
@@ -275,7 +275,7 @@ IN75:   LXI     D,CRTCMD
 ;DETECTED, THE PROGRAM WILL DROP THRU TO THE IDLE LOOP AND ENABLE
 ;INTERRUPTS.
         LXI     H,PORTC
-;PAGE  7 =======================================================================
+;=== PAGE  7 ===================================================================
 IN75A:  MOV     A, M
         ANI     VRTC
         JNZ     IN75A
@@ -331,14 +331,14 @@ OK7:    LDA     SERDAT          ;READ USART
         ANI     07FH            ;STRIP MSB
         STA     USCHR           ;PUT IT IN MEMORY
 
-;PAGE  8 =======================================================================
+;=== PAGE  8 ===================================================================
 
         ;THIS ROUTINE CHECKS FOR ESCAPE CHARACTERS, LF, CR,
         ;FF, AND BACK SPACE
         ;
 CHREC:  LDA     ESCP            ;ESCAPE SET?
         CPI     EOH             ;SEE IF IT IS
-        JZ      ESG0            ;LEAVE IF IT IS
+        JZ      ESSQ            ;LEAVE IF IT IS
         LDA     USCHR           ;GET CHARACTER
         CPI     OAH             ;LINE FEED
         JZ      LNFD            ;GO TO LINE FEED
@@ -387,7 +387,7 @@ SAVKEY: INX     H               ;POINT AT 'RETLIN'.
 ;THIS ROUTINE IS CALLED FROM THE FRAME ’INTERRUPT WHEN A KEY DEPRESSION
 ;WAS SENSED DURING THE LAST VERTICAL RETRACE INTERVAL.
 KYDOWN: LXI     H, SCNLIN       ;GET SCAN LINE
-;PAGE  9 =======================================================================
+;=== PAGE  9 ===================================================================
         MOV     A,M             ;PUT SCAN LINE IN A
         STA     PORTA           ;OUTPUT SCAN LINE TO PORT A
         DCX     H               ;POINT AT RETURN LINE
@@ -443,9 +443,9 @@ SCR:    MOV     E,B             ;PUT TARGET IN E
         MOV     A,B             ;GET A BACK
 STKEY:  STA     KBCHR           ;SAVE CHARACTER
         MVI     A,0C1H          ;SET A
-;PAGE 10 =======================================================================
+;=== PAGE 10 ===================================================================
         STA     KEYDWN          ;SAVE KEY DOWN
-        JMP     EFRAHE          ;LEAVE
+        JMP     EFRAME          ;LEAVE
 
 KYCHNG: MVI     A,00H           ;ZERO 0
         STA     KEYDWN          ; RESET KEY DOWN
@@ -471,7 +471,7 @@ CAPLOC: MOV     A,B             ;GET A BACK
 CNTDWN: MVI     A,SOH           ;SET BIT 7 IN A
         ORA     B               ;OR WITH CHARACTER
         ANI     OBFH            ;MAKE SURE SHIFT IS NOT SET
-        MOV     B-A             ;PUT IT BACK IN B
+        MOV     B,A             ;PUT IT BACK IN B
         JMP     SCR             ;GO BACK
 SHDWN:  MVI     A,40H           ;SET BIT 6 IN A
         ORA     B               ;OR WITH CHARACTER
@@ -498,8 +498,8 @@ ESSQ:   MVI     A,00H           ;ZERO A
         CPI     'C'             ;CURSOR RIGHT CHARACTER
         JZ      RIGHT           ;MOVE CURSOR TO THE RIGHT
         CPI     'D'             ;CURSOR LEFT CHARACTER
-        JZ      LEET            ;MOVE CURSOR TO THE LEFT
-;PAGE 11 =======================================================================
+        JZ      LEFT            ;MOVE CURSOR TO THE LEFT
+;=== PAGE 11 ===================================================================
         CPI     'H'             ;HOME CURSOR CHARACTER
         JZ      HOME            ;HOME THE CURSOR
         JMP     SETUP           ;LEAVE
@@ -515,7 +515,7 @@ DOWN:   LDA     CURSY           ;PUT CURSOR Y IN A
         CALL    CALCU           ;CALCULATE ADDRESS
         MOV     A,M             ;GET FIRST LOCATION OF THE LINE
         CPI     0F0H            ;SEE IF CLEAR SCREEN CHARACTER
-        jnz     setup           ;Leave if it is not
+        JNZ     SETUP           ;Leave if it is not
         SHLD    LOCSQ           ;SAVE BEGINNING OF THE LINE
         CALL    CLLINE          ;CLEAR THE LINE
         JMP     SETUP           ;LEAVE
@@ -554,7 +554,7 @@ OVR2:   MOV     A,E             ;SEE IF MORE LINES
         JNZ     0VR2
         MOV     A,H
         CPI     HIQH(LAST)
-;PAGE 12 =======================================================================
+;=== PAGE 12 ===================================================================
         JNZ     0VR2
         LXI     H,TOPDIS        ;CORRECT FOR WRAP-AROUND.
         JMP     0VR2            ;CONTINUE BLANKING REST OF SCREEN.
@@ -610,7 +610,7 @@ LEFT:   LDA     CURSX           ;GET X CURSOR
         CALL    LDCUR           ;LOAD THE CURSOR
         JMP     SETUP
 NOVER:  DCR A                   ;ADJUST X CURSOR
-;PAGE 13 =======================================================================
+;=== PAGE 13 ===================================================================
         STA     CURSX           ;SAVE CURSOR X
         CALL    LDCUR           ;LOAD THE CURSOR
         JMP     SETUP           ;LEAVE
@@ -666,7 +666,7 @@ FMFD:   CALL    CLSCR           ;CALL CLEAR SCREEN
         ;
         ;THIS ROUTINE CLEARS THE SCREEN BY WRITING END OF ROW
         ;CHARACTERS INTO THE FIRST LOCATION OF ALL LINES ON
-;PAGE 14 =======================================================================
+;=== PAGE 14 ===================================================================
         ;THE SCREEN.
 CLSCR:  MVI     A,0F0H          ;PUT EOR CHARACTER IN A
         MVI     B,NUMLIN
@@ -721,7 +721,7 @@ CLLINE: DI                      ;NO INTERRUPTS HERE
         PUSH    H
         PUSH    H
         PUSH    H
-;PAGE 15 =======================================================================
+;=== PAGE 15 ===================================================================
         PUSH    H
         PUSH    H
         PUSH    H
@@ -777,7 +777,7 @@ ONBOT:  LHLD    TOPAD           ;GET TOP ADDRESS
         LXI     H,TOPDIS        ;LOAD HL WITH TOP OF DISPLAY
 ARND:   SHLD    TOPAD           ;SAVE NEW TOP ADDRESS '
         CALL    CLLINE          ;CLEAR LINE
-;PAGE 16 =======================================================================
+;=== PAGE 16 ===================================================================
         CALL    LDCUR           ;LOAD THE CURSOR
         RET
         ;
@@ -811,7 +811,7 @@ OKI:    STA     CURSX           ;SAVE CURSOR
 CALCU:  LHLD    CURSY           ;CALCULATE START ADDRESS OF CURRENT LINE.
         MVI     H,0
         DAD     H
-        LXI     D,LINTAH
+        LXI     D,LINTAB
         DAD     D
         MOV     E,M
         INX     H
@@ -821,7 +821,8 @@ CALCU:  LHLD    CURSY           ;CALCULATE START ADDRESS OF CURRENT LINE.
         XCHG                    ;SAVE.
         LXI     H,-LAST         ;CHECK FOR CURSOR WRAP-AROUND.
         DAD     D
-        XCHG    RNC             ;RETURN IF NO WRAP.
+        XCHG
+        RNC                     ;RETURN IF NO WRAP.
         LXI     D, TOPDIS-LAST  ;OTHERWISE, CORRECT FOR WRAP.
         DAD     D
         RET
@@ -830,7 +831,7 @@ CALCU:  LHLD    CURSY           ;CALCULATE START ADDRESS OF CURRENT LINE.
         ;IN H AND L
         ;
 ADX:    LDA     CURSX           ;GET CURSOR
-;PAGE 17 =======================================================================
+;=== PAGE 17 ===================================================================
         MVI     B,00H           ;ZERO B
         MOV     C,A             ;PUT CURSOR X IN C
         DAD     B               ;ADD CURSOR X TO H AND L
@@ -868,8 +869,6 @@ LINTAB: LINNUM SET 0
         DW      (LINSIZ*LINNUM)
         LINNUM SET (LINNUM+1)
         ENDM
-        DW      (LINSIZ*LINNUH)
-        LINNUM SET (LINNUM+1)
         DW      (LINSIZ*LINNUM)
         LINNUM SET (LINNUM+1)
         DW      (LINSIZ*LINNUM)
@@ -882,12 +881,14 @@ LINTAB: LINNUM SET 0
         LINNUM SET (LINNUM+1)
         DW      (LINSIZ*LINNUM)
         LINNUM SET (LINNUM+1)
-        DW      (LINSIZ*LINNUM1
+        DW      (LINSIZ*LINNUM)
         LINNUM SET (LINNUM+1)
         DW      (LINSIZ*LINNUM)
         LINNUM SET (LINNUM+1)
-;PAGE 18 =======================================================================
-        DW      (LINSIZ*lINNUM)
+        DW      (LINSIZ*LINNUM)
+        LINNUM SET (LINNUM+1)
+;=== PAGE 18 ===================================================================
+        DW      (LINSIZ*LINNUM)
         LINNUM SET (LINNUM+1)
         DW      (LINSIZ*LINNUM)
         LINNUM SET (LINNUM+1)
@@ -936,7 +937,7 @@ KYLKUP: DB      38H,39H         ;8 AND  9
         DB      75H,69H         ;LOWER CASE U AND I
         DB      6FH,70H         ;LOWER CASE 0 AND P
         DB      5BH,5CH         ;C AND  \
-;PAGE 19 =======================================================================
+;=== PAGE 19 ===================================================================
         DB      0AH,7FH         ;LF AND DELETE
         DB      6AH,6BH         ;LOWER CASE J AND K
         DB      6CH,3BH         ;LOWER CASE L AND /
@@ -964,7 +965,7 @@ KYLKUP: DB      38H,39H         ;8 AND  9
         DB      3SH,00H         ;6 AND NOTHING
         DB      2AH,28H         ;* AND )
         DB      29H,5FH         ;( AND -
-;PAGE 20 =======================================================================
+;=== PAGE 20 ===================================================================
         DB      2BH,00H         ;+ AND NOTHING
         DB      08H,00H         ;BS AND BREAK
         DB      55H,49H         ;U AND I
@@ -993,7 +994,7 @@ KYLKUP: DB      38H,39H         ;8 AND  9
         DB      54H,00H         ;T AND NO CONNECTION
         DB      1BH,21H         ;ESCAPE AND !
         DB      40H,23H         ;@ AND #
-;PAGE 21 =======================================================================
+;=== PAGE 21 ===================================================================
         DB      24H, 25H        ;$ AND 7.
         DB      5EH,00H         ;" AND NO CONNECTION
         ;
@@ -1023,7 +1024,7 @@ KYLKUP: DB      38H,39H         ;8 AND  9
         DB      04H,0AH         ;CONTROL D AND F
         DB      07H,0BH         ;CONTROL G AND H
         DB      00H,11H         ;NOTHING AND CONTROL Q
-;PAGE 22 =======================================================================
+;=== PAGE 22 ===================================================================
         DB      17H,13H         ;CONTROL W AND S
         DB      0AH,12H         ;CONTROL E AND R
         DB      14H,00H         ;CONTROL W AND NOTHING
@@ -1038,8 +1039,8 @@ BD110   SET     1B5H            ;8253 COUNT FOR 110 BAUD.
 BD9600  EQU     000AH           ;8253 COUNT FOR 9600 BAUD.
 
 SETBD   MACRO   COUNT
-        DB  LOW COUNT
-        DB  HIGH COUNT
+        DB      LOW COUNT
+        DB      HIGH COUNT
         ENDM
                                 ;S2  SI  SO  BAUD
 BDLK:   SETBD   BD110           ;ON  ON  ON  110
@@ -1047,21 +1048,21 @@ BDLK:   SETBD   BD110           ;ON  ON  ON  110
         DB      HIGH BD110
         SETBD   (BD9600*64)     ;ON  ON  OFF 150
         DB      LOW (BD9600*64)
-        DB      HIGH (BD9600+64)
-        SETBD   (BD9600M-32)    ;ON  OFF ON  300
+        DB      HIGH (BD9600*64)
+        SETBD   (BD9600*32)     ;ON  OFF ON  300
         DB      LOW (BD9600*32)
-        DB      HIGH (BD9600#32)
+        DB      HIGH (BD9600*32)
         SETBD   (BD9600*16)     ;ON  OFF OFF 600
-        DB      LOW (BD9600«16)
-        DB      HIGH (BD9600-W-16)
+        DB      LOW (BD9600*16)
+        DB      HIGH (BD9600*16)
         SETBD   (BD9600*8)      ;OFF ON  ON  1200
         DB      LOW (BD9600*8)
-        DB      HIGH (BD9600*B)
+        DB      HIGH (BD9600*8)
         SETBD   (BD9600*4)      ;OFF ON  OFF 2400
         DB      LOW (BD9600*4)
         DB      HIGH (BD9600*4)
-        SETBD   (BD9600*2)      ;OFF OFF ON  4800
-        DB      LOW (809600*2)
+        SETBD   (BD9600*2)     ;OFF OFF ON  4800
+        DB      LOW (DB9600*2)
         DB      HIGH (BD9600*2)
         SETBD   (BD9600)        ;OFF OFF OFF 9600
         DB      LOW (BD9600)
