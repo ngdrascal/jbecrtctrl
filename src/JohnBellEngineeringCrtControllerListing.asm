@@ -57,16 +57,16 @@ SCNLIN: DS      1
 LINCNT: DS      1
 
 STPTR   EQU     RAM+800H        ;PROGRAM STACK.
-CS75    EQU     LD75+B00H
+CS75    EQU     LD75+800H
 DACK    EQU     TOPDIS+1000H    ;RAM + 8275 DACK
 BASE53  EQU     LD75+1800H      ;RAM + 8253 CS.
 BASE55  EQU     4000H           ;8255 BASE ADDRESS.
-PORTA   EQU     BASE55+O        ;
-PQRTB   EQU     BASE55+1        ;
+PORTA   EQU     BASE55+0        ;
+PORTB   EQU     BASE55+1        ;
 PORTC   EQU     BASE55+2        ;
 CMD55   EQU     BASE55+3        ;
 BASE51  EQU     2000H           ;8251 BASE ADDRESS.
-SERDAT  EQU     BASES1+0
+SERDAT  EQU     BASE51+0
 SERCMD  EQU     BASE51+1
 CNTO    EQU     BASE53+0
 CNT1    EQU     BASE53+1
@@ -74,10 +74,10 @@ CNT2    EQU     BASE53+2
 CNTM    EQU     BASE53+3
 CRTPAR  EQU     CS75+0
 CRTCMD  EQU     CS75+1
-CURBDT  EQU     NUMLIN-1
-VRTC    EQU     OSH             ;CONNECTED TO 8255A PORT C BIT 3.
-LCL     EQU     SOH             ;CONNECTED TO 8255A PORT C BIT 7.
-EOR     EQU     OFOH            ;END-OF-RDW CMD FOR 8275.
+CURBOT  EQU     NUMLIN-1
+VRTC    EQU     08H             ;CONNECTED TO 8255A PORT C BIT 3.
+LCL     EQU     80H             ;CONNECTED TO 8255A PORT C BIT 7.
+EOR     EQU     0F0H            ;END-OF-RDW CMD FOR 8275.
 $EJECT
 ;=== PAGE  3 ===================================================================
         ASEG
@@ -218,21 +218,21 @@ LINE:   POP     H
         EI
         RET
 ;REST OF POWER-ON INITIALIZATION CONTINUES HERE.
-INIT55: MVI     A, SUH          ;MOVE 8255 CONTROL WORD INTO A
+INIT55: MVI     A, 82H          ;MOVE 8255 CONTROL WORD INTO A
 ;=== PAGE  6 ===================================================================
         STA     CMD55           ;PUT CONTROL WORD INTO 8255
         ;
         ; 8251 INITIALIZATION
         ;
 INIT51: LXI     H,SERCMD        ;PQINT TO 8251A COMMAND REGISTER
-        MVI     M,SOH           ;DUMMY STORE TO 8251
+        MVI     M,80H           ;DUMMY STORE TO 8251
         MVI     M,00H           ;RESET 8251
         MVI     M,40H
         NOP                     ;WAIT FOR RESET TO OCCUR.
         NOP
         NOP
         NOP
-        MVI     M,OEAH          ;2 STOP BITS, NO PARITY, 16X RATE, 8 DATA BITS
+        MVI     M,0EAH          ;2 STOP BITS, NO PARITY, 16X RATE, 8 DATA BITS
         MVI     M,27H           ;ENABLE RTS, TX, RX
         ;
         ;8253 INITIALIZATION
@@ -243,7 +243,7 @@ INIT51: LXI     H,SERCMD        ;PQINT TO 8251A COMMAND REGISTER
         STA     CNTO            ;PUT IT IN 8253
         MVI     A,00H           ;MSD 8253
         STA     CNTO            ;PUT IT IN 8253
-        CALL    STBAUD          ;CO DO BAUD RATE
+        CALL    SIBAUD          ;CO DO BAUD RATE
         ;
         ;B275 INITIALIZATION
         ;
@@ -255,16 +255,16 @@ IN75:   LXI     D,CRTCMD
         DCX     H               ;HL=1000H
         MVI     M,LINSIZ-1
         LDAX    D
-        MVI     M, 40H+(NUMLIN-l);2 ROWS/VRTC, (NUMLIN) CHARACTER ROWS
+        MVI     M, 40H+(NUMLIN-1);2 ROWS/VRTC, (NUMLIN) CHARACTER ROWS
         LDAX    D
-        MVI     M,B9H           ;UNDERLINE ROW 8, 10 HRTC/CHAR
+        MVI     M,0B9H          ;UNDERLINE ROW 8, 10 HRTC/CHAR
         LDAX    D
-        MVI     M, ODDH         ;NON-DFFSET, TRANSPARENT, BLINK UNDERLINE, HRTC=28 CCLK
+        MVI     M, 0DDH         ;NON-DFFSET, TRANSPARENT, BLINK UNDERLINE, HRTC=28 CCLK
         LDAX    D
         CALL    LDCUR           ;LOAD THE CURSOR
         INX     H
         INX     D
-        MVI     M,OEOH          ;PRESET COUNTERS
+        MVI     M,0E0H          ;PRESET COUNTERS
         LDAX    D
         MVI     M, 23H          ;START DISPLAY
         LDAX    D
@@ -281,7 +281,7 @@ IN75A:  MOV     A, M
         JNZ     IN75A
 IH75B:  MOV     A,M
         ANI     VRTC
-        JZ      IN75B
+        JZ      IH75B
 
 ;THIS IS THE CRT IDLE LOOP. THE LINE/LOCAL SWITCH IS MONITORED,
 ;AND ANY KEY DEPRESSIONS FREOM THE PREVIOUS FRAME INTERRUPT ARE
@@ -299,7 +299,7 @@ RXRDY:  LDA     PORTC           ;TEST LINE/LOCAL SWITCH.
         ANI     02H             ;LOOK AT RXRDY
         JNZ     0K7             ;IF HAVE CHARACTER GO TO WORK
 KEYINP: LDA     KEYDWN          ;GET KEYBOARD CHARACTER
-        ANI     SOH             ;IS IT THERE
+        ANI     80H             ;IS IT THERE
         JNZ     KEYS            ;IF KEY IS PUSHED LEAVE
         MVI     A,00H           ;ZERO A
         STA     KEYOK           ;CLEAR KEYOK
@@ -322,7 +322,7 @@ KEYS:   LDA     KEYOK           ;WAS KEY DOWN
         ANI     LCL
         JNZ     CHREC           ;JMP IF IN LOCAL MODE.
 TRANS:  LDA     SERCMD          ;GET USART FLAGS
-        ANI     O1H             ;READY TO TRANSMIT?
+        ANI     01H             ;READY TO TRANSMIT?
         JZ      TRANS           ;LOOP IF NOT READY
         LDA     USCHR           ;GET CHARACTER
         STA     SERDAT          ;PUT IN USART
@@ -337,21 +337,21 @@ OK7:    LDA     SERDAT          ;READ USART
         ;FF, AND BACK SPACE
         ;
 CHREC:  LDA     ESCP            ;ESCAPE SET?
-        CPI     EOH             ;SEE IF IT IS
+        CPI     80H             ;SEE IF IT IS
         JZ      ESSQ            ;LEAVE IF IT IS
         LDA     USCHR           ;GET CHARACTER
-        CPI     OAH             ;LINE FEED
+        CPI     0AH             ;LINE FEED
         JZ      LNFD            ;GO TO LINE FEED
-        CPI     OCH             ;FORM FEED
-        JZ      FNFD            ;GO TO FORM FEED
-        CPI     ODH             ;CR
-        JZ      CGRT            ;DO A CR
-        CPI     OSH             ;BACK SPACE
+        CPI     0CH             ;FORM FEED
+        JZ      FMFD            ;GO TO FORM FEED
+        CPI     0DH             ;CR
+        JZ      CORT            ;DO A CR
+        CPI     08H             ;BACK SPACE
         JZ      LEFT            ;DO A BACK SPACE
         CPI     1BH             ;ESCAPE
         JZ      ESKAP           ;DO AN ESCAPE
         ORA     A               ;CLEAR CARRY
-        ADI     OEOH            ;SEE IF CHARACTER IS PRINTABLE
+        ADI     0E0H            ;SEE IF CHARACTER IS PRINTABLE
         JC      CHRPUT          ;IF PRINTABLE DO IT
         JMP     SETUP           ;GO BACK AND READ USART AGAIN
 
@@ -381,7 +381,7 @@ SAVKEY: INX     H               ;POINT AT 'RETLIN'.
         MOV     M,A             ;SAVE RETURN LINE IN MEMORY
         INX     H               ;POINT H AT SCAM LINE
         MOV     M,B             ;SAVE SCAN LINE IN MEMORY '
-        MVI     A,4OH           ;SET A
+        MVI     A,40H           ;SET A
         STA     KEYDWN          ;SAVE KEY DOWN
         RET                     ;LEAVE
 ;THIS ROUTINE IS CALLED FROM THE FRAME ’INTERRUPT WHEN A KEY DEPRESSION
@@ -397,16 +397,16 @@ KYDOWN: LXI     H, SCNLIN       ;GET SCAN LINE
         ORA     A               ;SET.FLAGS
         JZ      KYCHNG          ;IF DIFFERENT KEY HAS CHANGED
         LDA     KEYDWN          ;GET KEY DOWN
-        ANI     O1H             ;HAS, THIS BEEN DONE BEFORE?
+        ANI     01H             ;HAS, THIS BEEN DONE BEFORE?
         JNZ     EFRAME          ;LEAVE IF IT HAS
         LDA     PORTB           ;GET RETURN LINE
-        MVI     B,OFFH          ;GET READY TO ZERO B
+        MVI     B,0FFH          ;GET READY TO ZERO B
 UP:     INR     B               ;ZERO B
         RRC                     ;ROTATE A
         JC      UP              ;DO IT AGAIN
         INX     H               ;POINT H AT SCAN LINES
         MOV     A,M             ;GET SCAN LINES
-        MVI     C,OFFH          ;GET READY TO LOOP
+        MVI     C,0FFH          ;GET READY TO LOOP
 UP1:    INR     C               ;START C COUNTING
         RRC                     ;ROTATE A
         JC      UP1             ;JUMP TO LOOP
@@ -429,8 +429,8 @@ UP1:    INR     C               ;START C COUNTING
         MOV     C,A             ;SAVE A
         MOV     A,D             ; GET SHIFT CONTROL
         ANI     20H             ;STRIP CONTROL
-        URA     C               ;ARE THEY THE SAME?
-        JZ      SHOWN           ;IF SET LEAVE
+        ORA     C               ;ARE THEY THE SAME?
+        JZ      SHDWN           ;IF SET LEAVE
 SCR:    MOV     E,B             ;PUT TARGET IN E
         MVI     D,00H           ;ZERO D
         LXI     H,KYLKUP        ;GET LOOKUP TABLE
@@ -468,9 +468,9 @@ CAPLOC: MOV     A,B             ;GET A BACK
         ;THE ROUTINES SHDWN AND CNTDWN SET BIT 6 AND 7 RESPECTIVLY
         ;IN THE. ACC.
         ;
-CNTDWN: MVI     A,SOH           ;SET BIT 7 IN A
+CNTDWN: MVI     A,80H           ;SET BIT 7 IN A
         ORA     B               ;OR WITH CHARACTER
-        ANI     OBFH            ;MAKE SURE SHIFT IS NOT SET
+        ANI     0BFH            ;MAKE SURE SHIFT IS NOT SET
         MOV     B,A             ;PUT IT BACK IN B
         JMP     SCR             ;GO BACK
 SHDWN:  MVI     A,40H           ;SET BIT 6 IN A
@@ -516,7 +516,7 @@ DOWN:   LDA     CURSY           ;PUT CURSOR Y IN A
         MOV     A,M             ;GET FIRST LOCATION OF THE LINE
         CPI     0F0H            ;SEE IF CLEAR SCREEN CHARACTER
         JNZ     SETUP           ;Leave if it is not
-        SHLD    LOCSQ           ;SAVE BEGINNING OF THE LINE
+        SHLD    L0C80           ;SAVE BEGINNING OF THE LINE
         CALL    CLLINE          ;CLEAR THE LINE
         JMP     SETUP           ;LEAVE
         ;
@@ -529,7 +529,7 @@ CLEAR:  CALL    CLSCR           ;GO CLEAR THE SCREEN
         ;
 CLRST:  CALL    CALCU           ;CALCULATE ADDRESS
         CALL    ADX             ;ADD X POSITION
-        MVI     B,(LINSIZ-D+1   ;LOAD LARGEST X COORDINATE.
+        MVI     B,LINSIZ        ;LOAD LARGEST X COORDINATE.
         MVI     C,' '
         LDA     CURSY           ;LOAD CURRENT Y COORDINATE.
         MOV     E,A
@@ -542,7 +542,7 @@ LLP:    MOV     M,C             ;CLEAR NEXT CHARACTER ON CURRENT LINE.
         CMP     B
         JNZ     LLP             ;JMP IF MORE.
         INR     E               ;UPDATE LINE COUNT.
-DVR1:   LXI     B,LINSIZ        ;LOAD OFFSET TO NEXT LIME.
+OVR1:   LXI     B,LINSIZ        ;LOAD OFFSET TO NEXT LIME.
 OVR2:   MOV     A,E             ;SEE IF MORE LINES
         CPI     NUMLIN
         JZ      SETUP           ;EXIT IF DONE.
@@ -551,18 +551,18 @@ OVR2:   MOV     A,E             ;SEE IF MORE LINES
         DAD     B               ;POINT TO NEXT  ROW.
         MOV     A,L             ;CHECK FOR DISPLAY WRAP-AROUND.
         CPI     LOW(LAST)
-        JNZ     0VR2
+        JNZ     OVR2
         MOV     A,H
-        CPI     HIQH(LAST)
+        CPI     HIGH(LAST)
 ;=== PAGE 12 ===================================================================
-        JNZ     0VR2
+        JNZ     OVR2
         LXI     H,TOPDIS        ;CORRECT FOR WRAP-AROUND.
-        JMP     0VR2            ;CONTINUE BLANKING REST OF SCREEN.
+        JMP     OVR2            ;CONTINUE BLANKING REST OF SCREEN.
         ;
         ;THIS ROUTINE CLEARS THE LINg THE CURSOR IS ON.
         ;
 CLRLIN: CALL    CALCU           ;CALCULATE ADDRESS
-        SHLD    LDC80           ;STORE H AND L TO CLEAR LINE
+        SHLD    L0C80           ;STORE H AND L TO CLEAR LINE
         CALL    CLLINE          ; CLEAL THE LINE
         JMP     SETUP           ; CO BACK
         ;
@@ -583,7 +583,7 @@ RIGHT:  LDA     CURSX           ;GET X  CURSOR
         JNZ     NTOVER          ;IF NOT JUMP AROUND
         LDA     CURSY           ;GET Y CURSOR
         CPI     CURBOT          ;SEE IF ON BOTTOM
-        JZ      GDIS            ;IF WE ARE JUMP
+        JZ      GD18            ;IF WE ARE JUMP
         INR     A               ;INCREMENT Y CURSOR
         STA     CURSY           ;SAVE IT
 GD18:   MVI     A,00H           ;ZERD A
@@ -625,7 +625,7 @@ HOME:   MVI     A,00H           ;ZERO A
         ;
         ; THIS ROUTINE SETS THE ESCAPE BIT
         ;
-ESKAP:  MVI     A,SOH           ;LOAD A WITH ESCAPE BIT
+ESKAP:  MVI     A,80H           ;LOAD A WITH ESCAPE BIT
         STA     ESCP            ;SET ESCAPE LOCATION
         JMP     SETUP           ;CD BACK AND READ USART
         ;
@@ -766,7 +766,7 @@ CLLINE: DI                      ;NO INTERRUPTS HERE
         ;IS USED TO IMPLEMENT THE LINE FEED
         ;
 ONBOT:  LHLD    TOPAD           ;GET TOP ADDRESS
-        SHLD    LOCB0           ;SAVE IT IN LOCB0
+        SHLD    L0C80           ;SAVE IT IN LOCB0
         LXI     D,LINSIZ        ;LINE LENGTH
         DAD     D               ;ADD HL + DE
         XCHG
@@ -786,10 +786,10 @@ ARND:   SHLD    TOPAD           ;SAVE NEW TOP ADDRESS '
         ;AUTO CR/LF MODE IS USED.
 CHRPUT: CALL    CALCU           ;CALCULATE SCREEN POSITION
         MOV     A,M             ;GET'FIRST CHARACTER
-        CPI     OFOH            ;IS IT A CLEAR LINE
-        SHLD    LOCSO           ;SAVIS'LINE TO CLEAR
+        CPI     0F0H            ;IS IT A CLEAR LINE
+        SHLD    L0C80           ;SAVIS'LINE TO CLEAR
         CZ      CLLINE          ;CLEAR LINE
-        LHLD    LOCSO           ;GET LINE
+        LHLD    L0C80           ;GET LINE
         CALL    ADX             ;ADD CURSOR X
         LDA     USCHR           ;GET CHARACTER
         MOV     M,A             ;PUT IT ON SCREEN
@@ -798,7 +798,7 @@ CHRPUT: CALL    CALCU           ;CALCULATE SCREEN POSITION
         CPI     LINSIZ          ;HAS IT GONE TOD FAR?
         JNZ     OKI             ;IF NOT GOOD
         CALL    LNFD1           ;DO A LINE FEED
-        JMP     CGRT            ;DO A CR
+        JMP     CORT            ;DO A CR
 OKI:    STA     CURSX           ;SAVE CURSOR
         CALL    LDCUR           ;LOAD THE CURSOR
         JMP     SETUP           ;LEAVE
@@ -1062,7 +1062,7 @@ BDLK:   SETBD   BD110           ;ON  ON  ON  110
         DB      LOW (BD9600*4)
         DB      HIGH (BD9600*4)
         SETBD   (BD9600*2)     ;OFF OFF ON  4800
-        DB      LOW (DB9600*2)
+        DB      LOW (BD9600*2)
         DB      HIGH (BD9600*2)
         SETBD   (BD9600)        ;OFF OFF OFF 9600
         DB      LOW (BD9600)
