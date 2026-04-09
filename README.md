@@ -1,18 +1,7 @@
 # John Bell Engineering CRT Controller board
 Circa 1981
-# Board #
-## Key Components ##
-* Intel [8275](https://en.wikipedia.org/wiki/Intel_8085#MCS-85_family) - Programmable CRT Controller
-* Intel [8251](https://en.wikipedia.org/wiki/Intel_8251) - Universal synchronous and asynchronous receiver-transmitter (UART)
-* Intel [8253](https://en.wikipedia.org/wiki/Intel_8253) - Programmable Interval Timers
-* Intel [8255](https://en.wikipedia.org/wiki/Intel_8255) - Programmable Peripheral Interface
-* Intel [8085](https://en.wikipedia.org/wiki/Intel_8085) - 8 bit microprocessor
-## Schematic ##
-See pages 3 and 4 of the [manual](./docs/JohnBellEngineeringCrtControllerManual.pdf).
-## Front ##
+
 ![Front](./images/board_front.png)
-## Back ##
-![Back](./images/board_back.png)
 
 ### BASIC CONFIGURATION
 As shown in the schematic the heart of the controller is an 8085А
@@ -240,7 +229,8 @@ are linked or chained together by pointers. Lines may be easily inserted or dele
 the processor follows the pointer chain from one line to the next.
 
 ### KEYBOARD INTERFACE
-The keyboard used in this design was a simple unencoded ASCII keyboard. In order to keep the cost to a minimum a simple scan matrix
+The keyboard used in this design was a simple unencoded ASCII keyboard.
+In order to keep the cost to a minimum a simple scan matrix
 technique was implemented by using two ports of an 8255 parallel I/O
 device.
 
@@ -262,3 +252,15 @@ lines of Port C of the 8255.
 In order to guarantee that two scan lines could not be shorted together
 if two or more keys are pushed simultaneously, isolation diodes could
 be added.
+
+![Keyboard](./images/Figure_2A_2B.png)
+
+# Board #
+## Key Components ##
+* Intel [8275](https://en.wikipedia.org/wiki/Intel_8085#MCS-85_family) - Programmable CRT Controller
+* Intel [8251](https://en.wikipedia.org/wiki/Intel_8251) - Universal synchronous and asynchronous receiver-transmitter (UART)
+* Intel [8253](https://en.wikipedia.org/wiki/Intel_8253) - Programmable Interval Timers
+* Intel [8255](https://en.wikipedia.org/wiki/Intel_8255) - Programmable Peripheral Interface
+* Intel [8085](https://en.wikipedia.org/wiki/Intel_8085) - 8 bit microprocessor
+## Schematic ##
+See pages 3 and 4 of the [manual](./docs/JohnBellEngineeringCrtControllerManual.pdf).
