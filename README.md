@@ -1,7 +1,7 @@
 # John Bell Engineering CRT Controller board
 Circa 1981
 
-![Front](./images/board_front.png)
+<img src="./images/board_front.png" width="50%" height="50%">
 
 ### BASIC CONFIGURATION
 As shown in the schematic the heart of the controller is an 8085А
@@ -260,8 +260,9 @@ be added.
 * Intel [8251](https://en.wikipedia.org/wiki/Intel_8251) - Universal synchronous and asynchronous receiver-transmitter (UART)
 * Intel [8253](https://en.wikipedia.org/wiki/Intel_8253) - Programmable Interval Timers
 * Intel [8255](https://en.wikipedia.org/wiki/Intel_8255) - Programmable Peripheral Interface
+* Intel [8282](https://en.wikipedia.org/wiki/Intel_8282) - 8 Bit Octal Latch
 * Intel [8224](.docs/datasheets/Intel_8224.pdf) - Clock Generator and Driver for 8080A CPU
-* Intel [8085](https://en.wikipedia.org/wiki/Intel_8085) - 8 bit microprocessor
+* Intel [8085](https://en.wikipedia.org/wiki/Intel_8085) - 8 Bit Microprocessor
 
 ### Schematic
 See pages 3 and 4 of the [manual](./docs/JohnBellEngineeringCrtControllerManual.pdf).
@@ -392,3 +393,65 @@ No characters are sent to the CPU in this mode.
 When this switch is closed, all letters coming from the keyboard
 are typed on the screen in capital letters. When the switch
 is off, the Shift key must be used to get the capital letters.
+
+### USART JUMPERS
+For RS232 operation, no handshake:
+1. Put jumpers in CTS pin 3 to 4, and also in CTS center to
+position "T". Then ground pin 23, 24 of J1; this enables the USART to send
+characters.
+2. Place jumper for what type of RS232 signal level will be received
+as follows:
+   - _TTL level signal_:  jumper RXD from "T" to center and hook
+up RS232 signal from computer to pin 15, 16 of J1.
+   - _RS232 levels (±10V)_:  jumper RXD from "R" to center and hook
+(most common) up RS232 data line from the external computer
+to pin 25, 26 of J1.
+3. Jumper for what level signal to use on RS232 output to the
+external computer:
+   - _TTL level signal_:  tie pin 21, 22 on J1 to data-to-send line
+output on RS232 link to computer.
+   - _RS232 standard level_:  tie pin 31, 32 on J1 to data line on
+(most common) output RS232 link to external computer.
+
+#### NOTE:
+1. If TTL level signals are going to be used for the
+communication to the CPU, A1 and A2 can be deleted and
+no ±12 volt supply will be needed.
+2. Clear to Send (CTS) and Ready to Send (RTS) signals are
+available in both RS232 levels (±10V) and TTL levels
+on J1; these signals can be used for handshaking data
+transfers over the RS232 link.
+
+### SHIFT & CONTROL
+The Shift and Control keys are not used for
+(Pin 5-12)	(Pin 6-11)
+on S1 on S1
+
+The ASCII encoded keyboard software
+
+#### ESCAPE CODES - SPECIAL FUNCTIONS
+| Letter after <br> Escape Character | Function |
+| - | --- |
+| B | Move cursor down |
+| E | Clear screen |
+| J | Clear rest of screen below cursor |
+| K | Clears line cursor is on |
+| A | Move cursor up one line |
+| C | Move cursor right one character |
+| D | Move cursor left one character |
+| H | Home cursor to upper left screen |
+
+#### CONTROL KEYS
+The board recognizes control characters that are keyed in from
+the ASCII encoded keyboard or sent via the USART.
+
+#### FIELD ATTRIBUTES
+See attachment.
+
+Pin 36 of J2 must be tied low
+
+to disable the interpretation of ASCII characters as field
+attributes or special codes.
+
+This pin may be used as an input when field attributes are used
+but must remain low when ASCII is input via the keyboard.
