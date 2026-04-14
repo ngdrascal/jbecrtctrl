@@ -2,3 +2,35 @@
 *.hex
 *.lst
 *.sym
+
+
+# KiCad project files
+# Temporary and Backup Files
+*.000
+*.bak
+*.bck
+*.kicad_pcb-bak
+*.kicad_sch-bak
+*-backups/
+*-cache*
+*-bak
+*-bak*
+*~
+~*
+_autosave-*
+\#auto_saved_files\#
+*.tmp
+*-save.pro
+*-save.kicad_pcb
+fp-info-cache
+~*.lck
+
+# Local User Settings (Should not be shared)
+*.kicad_prl
+
+# Netlists and Autorouter Files
+*.net
+*.dsn
+*.ses
+docs/schema/JBE_CRT_Controller/sym-lib-table
+docs/schema/JBE_CRT_Controller/fp-lib-table
