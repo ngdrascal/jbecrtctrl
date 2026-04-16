@@ -2,7 +2,7 @@
 	(version 20250114)
 	(generator "eeschema")
 	(generator_version "9.0")
-	(uuid "d66d4bdf-c4d5-4f73-84a6-256ee4c139ea")
+	(uuid "9781b979-3a08-4ee0-9aba-af64c92d5b1c")
 	(paper "USLedger")
 	(lib_symbols
 		(symbol "74xx:74LS00"
@@ -8838,7 +8838,7 @@
 		(uuid "3a1c10d5-bbd1-4b75-abf6-7b4621e5e8f6")
 	)
 	(junction
-		(at 373.38 201.93)
+		(at 323.85 201.93)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "3b94f1ab-ea18-4b60-8188-b780d623781d")
@@ -9094,7 +9094,7 @@
 		(uuid "510e985a-a6ff-4df2-80ed-1f627925943c")
 	)
 	(no_connect
-		(at 388.62 199.39)
+		(at 339.09 199.39)
 		(uuid "53833701-e8a1-40f4-87d4-8fbf79bef98f")
 	)
 	(no_connect
@@ -9600,7 +9600,7 @@
 	)
 	(wire
 		(pts
-			(xy 373.38 201.93) (xy 373.38 204.47)
+			(xy 323.85 201.93) (xy 323.85 204.47)
 		)
 		(stroke
 			(width 0)
@@ -10400,7 +10400,7 @@
 	)
 	(wire
 		(pts
-			(xy 373.38 196.85) (xy 373.38 201.93)
+			(xy 323.85 196.85) (xy 323.85 201.93)
 		)
 		(stroke
 			(width 0)
@@ -14306,7 +14306,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 373.38 204.47 0)
+		(at 323.85 204.47 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -14314,7 +14314,7 @@
 		(dnp no)
 		(uuid "6d3228e0-e4ab-4693-a130-3838a4c87a03")
 		(property "Reference" "#PWR043"
-			(at 373.38 210.82 0)
+			(at 323.85 210.82 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14323,7 +14323,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 373.38 208.28 0)
+			(at 323.85 208.28 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14331,7 +14331,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 373.38 204.47 0)
+			(at 323.85 204.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14340,7 +14340,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 373.38 204.47 0)
+			(at 323.85 204.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14349,7 +14349,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 373.38 204.47 0)
+			(at 323.85 204.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15452,7 +15452,7 @@
 	)
 	(symbol
 		(lib_id "74xx:74LS00")
-		(at 381 199.39 0)
+		(at 331.47 199.39 0)
 		(unit 4)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -15460,7 +15460,7 @@
 		(dnp no)
 		(uuid "c4fc32ba-fb85-4c4f-802c-7b7e8340232c")
 		(property "Reference" "U5"
-			(at 381 199.39 0)
+			(at 331.47 199.39 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15468,7 +15468,7 @@
 			)
 		)
 		(property "Value" "74LS00"
-			(at 381 204.47 0)
+			(at 331.47 204.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15476,7 +15476,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 381 199.39 0)
+			(at 331.47 199.39 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15485,7 +15485,7 @@
 			)
 		)
 		(property "Datasheet" "http://www.ti.com/lit/gpn/sn74ls00"
-			(at 381 199.39 0)
+			(at 331.47 199.39 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15494,7 +15494,7 @@
 			)
 		)
 		(property "Description" "quad 2-input NAND gate"
-			(at 381 199.39 0)
+			(at 331.47 199.39 0)
 			(effects
 				(font
 					(size 1.27 1.27)

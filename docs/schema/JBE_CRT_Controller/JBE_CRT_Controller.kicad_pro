@@ -226,7 +226,12 @@
     "equivalence_files": []
   },
   "erc": {
-    "erc_exclusions": [],
+    "erc_exclusions": [
+      [
+        "global_label_dangling|2667000|1714500|b4f34d01-d5a4-4698-81a9-2c48eff5bec4|00000000-0000-0000-0000-000000000000|/565f4556-4357-40cd-b8ff-2b85083c035f/a88889aa-3827-4477-a3cd-10970860eb8e||",
+        ""
+      ]
+    ],
     "meta": {
       "version": 0
     },
